@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "allowSyntheticDefaultImports": true,
+        "declaration": false,
+        // "module": "es2015",
+        "moduleResolution": "node",
+        "newLine": "LF",
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "noEmitHelpers": false,
+        "noEmitOnError": true,
+        "noResolve": false,
+        "removeComments": true,
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "target": "es5",
+        "lib": [
+            "dom", "es2015"
+        ],
+        "importHelpers": true
+    }
+}
