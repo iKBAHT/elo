@@ -1,5 +1,5 @@
 import { IDb } from "./IDb";
-import { IGamer } from "../interfaces/IGamer";
+import { IGamer, GamerId } from "../interfaces/IGamer";
 import { verbose, Database } from 'sqlite3';
 import { runMigration1 } from "./migration";
 const sqlite3: any = verbose();
@@ -16,6 +16,18 @@ export class SqlLiteManager implements IDb {
           reject(error);
         } else {
           resolve();
+        }
+      });
+    })
+  }
+
+  getScore(id: GamerId): Promise<number> {
+    return new Promise((resolve, reject) => {
+      db.each("SELECT score FROM gamer WHERE id = " + id, function (error, row) {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(row.score);
         }
       });
     })
