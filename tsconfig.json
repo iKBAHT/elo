@@ -12,7 +12,7 @@
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noUnusedParameters": true,
-        "noUnusedLocals": true,
+        // "noUnusedLocals": true,
         "noEmitHelpers": false,
         "noEmitOnError": true,
         "noResolve": false,
