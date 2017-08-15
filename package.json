@@ -1,0 +1,25 @@
+{
+  "name": "elobot",
+  "version": "1.0.0",
+  "description": "telegram bot to count elo raiting",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git/"
+  },
+  "keywords": [
+    "telegtam",
+    "bot",
+    "elo",
+    "raiting"
+  ],
+  "author": "iKBAHT",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node-telegram-bot-api": "^0.27.0",
+    "node-telegram-bot-api": "^0.28.0"
+  }
+}
