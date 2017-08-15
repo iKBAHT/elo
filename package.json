@@ -4,7 +4,7 @@
   "description": "telegram bot to count elo raiting",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node index.ts"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,9 @@
   "author": "iKBAHT",
   "license": "ISC",
   "dependencies": {
-    "@types/node-telegram-bot-api": "^0.27.0",
-    "node-telegram-bot-api": "^0.28.0"
+    "@types/node-telegram-bot-api": "0.27.0",
+    "node-telegram-bot-api": "0.28.0",
+    "ts-node": "3.3.0",
+    "typescript": "2.4.2"
   }
 }
