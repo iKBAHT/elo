@@ -6,7 +6,7 @@ const sqlite3: any = verbose();
 const file = 'db/elo.db';
 const db: Database = new sqlite3.Database(file);
 
-runMigration1(db);
+// runMigration1(db);
 
 export class SqlLiteManager implements IDb {
   start(g: IGamer): Promise<void> {
