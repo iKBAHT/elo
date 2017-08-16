@@ -12,7 +12,7 @@ const noResultMessage = 'no result';
 export class SqlLiteManager implements IDb {
   start(g: IGamer): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.getScore(g).then(
+      this.getGamer(g).then(
         () => { 
           reject('repeated insertion');
         },
@@ -36,10 +36,10 @@ export class SqlLiteManager implements IDb {
     })
   }
 
-  getScore(gamerId: IGamerId): Promise<IGamer> {
+  getGamer(gamerId: IGamerId): Promise<IGamer> {
     return new Promise((resolve, reject) => {
       db.all(
-        `SELECT groupId, userId, score, username FROM gamer WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
+        `SELECT * FROM gamer WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
         (error, rows) => {
           if (error) {
             reject(error);
@@ -52,11 +52,29 @@ export class SqlLiteManager implements IDb {
     })
   }
 
-  getAllScores(groupId: number): Promise<Array<IGamer>> {
+  getGamerByUsername(groupId: number, username: string): Promise<IGamer> {
+    console.log(groupId);
+    console.log(username);
     return new Promise((resolve, reject) => {
       db.all(
-        `SELECT groupId, userId, score, username FROM gamer WHERE groupId = ${groupId} ORDER BY
- score`,
+        `SELECT * FROM gamer WHERE UPPER(username) = UPPER(?) AND groupId = ${groupId}`,
+        [username],
+        (error, rows) => {
+          if (error) {
+            reject(error);
+          } else if (rows.length !== 1) {
+            reject(rows.length ? 'to many results' : noResultMessage);
+          } else {
+            resolve(rows[0]);
+          }
+        });
+    })
+  }
+
+  getGroupGamers(groupId: number): Promise<Array<IGamer>> {
+    return new Promise((resolve, reject) => {
+      db.all(
+        `SELECT * FROM gamer WHERE groupId = ${groupId} ORDER BY score`,
         (error, rows) => {
           if (error) {
             reject(error);
