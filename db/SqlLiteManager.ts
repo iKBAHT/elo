@@ -24,17 +24,17 @@ export class SqlLiteManager implements IDb {
     })
   }
 
-  getScore(gamerId: IGamerId): Promise<number> {
+  getScore(gamerId: IGamerId): Promise<IGamer> {
     return new Promise((resolve, reject) => {
       db.all(
-        `SELECT score FROM gamer WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
+        `SELECT groupId, userId, score, username FROM gamer WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
         (error, rows) => {
           if (error) {
             reject(error);
           } else if (rows.length !== 1) {
             reject(rows.length ? 'to many results' : 'no result');
           } else {
-            resolve(rows[0].score);
+            resolve(rows[0]);
           }
         });
     })

@@ -21,7 +21,7 @@ export class Bot {
     const gamer: IGamer = {
       groupId: msg.chat.id,
       userId: msg.from.id,
-      username: msg.from.username,
+      username: createUsername(msg),
       score: defaultScore
     }
     this.db.start(gamer)
@@ -29,17 +29,17 @@ export class Bot {
         this.botApi.sendMessage(msg.chat.id, 'Wellcome ' + gamer.username);
       })
       .catch((err: any) => {
-        this.botApi.sendMessage(msg.chat.id, 'Some error - ' + JSON.stringify(err));
+        this.sendError(msg, err);
       });
   }
 
   protected getScore = (msg: ITgMessage): void => {
     this.db.getScore({ userId: msg.from.id, groupId: msg.chat.id })
-      .then(score => {
-        this.botApi.sendMessage(msg.chat.id, msg.from.username + ' score ' + score);
+      .then(gamer => {
+        this.botApi.sendMessage(msg.chat.id, gamer.username + ' score ' + gamer.score);
       })
       .catch((err: any) => {
-        this.botApi.sendMessage(msg.chat.id, 'Some error - ' + JSON.stringify(err));
+        this.sendError(msg, err);
       });
   }
 
@@ -57,7 +57,17 @@ export class Bot {
         this.botApi.sendMessage(msg.chat.id, text);
       })
       .catch((err: any) => {
-        this.botApi.sendMessage(msg.chat.id, 'Some error - ' + JSON.stringify(err));
+        this.sendError(msg, err);
       });
   }
+
+  protected sendError(msg: ITgMessage, error: any): void {
+    const text: string = typeof error === 'string' ? error : JSON.stringify(error);
+    this.botApi.sendMessage(msg.chat.id, 'Some error - ' + text);
+  }
+}
+
+
+function createUsername(msg: ITgMessage): string {
+  return msg.from.username || msg.from.last_name || msg.from.first_name || (Math.round(Math.random() * 1000) + '');
 }
