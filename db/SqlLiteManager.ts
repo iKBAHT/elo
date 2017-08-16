@@ -67,8 +67,6 @@ export class SqlLiteManager implements IDb {
   }
 
   getGamerByUsername(groupId: number, username: string): Promise<IGamer> {
-    console.log(groupId);
-    console.log(username);
     return new Promise((resolve, reject) => {
       db.all(
         `SELECT * FROM gamer WHERE UPPER(username) = UPPER(?) AND groupId = ${groupId}`,

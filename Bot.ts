@@ -20,6 +20,7 @@ export class Bot {
     this.botApi.onText(/^\/score$/, this.getScore);
     this.botApi.onText(/^\/scores$/, this.getAllScores);
     this.botApi.onText(/^\/iwon/, this.win);
+    this.botApi.onText(/^\/ilost/, this.lose);
   }
 
   protected start = (msg: ITgMessage): void => {
@@ -67,12 +68,6 @@ export class Bot {
   }
 
   protected win = (msg: ITgMessage): void => {
-    // 1 получение 2ух игроков
-    //  1.1 найти игрока по имени
-    // 2 подсчет нового рейтинга
-    // 3 запись результата
-    // 4 вывод новых значений
-
     try {
       var loserUsername = getUsernameFromText(msg.text);
     } catch(err) {
@@ -81,6 +76,22 @@ export class Bot {
     }
     const looserPr = this.db.getGamerByUsername(msg.chat.id, loserUsername);
     const winnerPr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
+    this.changeScores(winnerPr, looserPr, msg);
+  }
+
+  protected lose = (msg: ITgMessage): void => {
+    try {
+      var winnerUsername = getUsernameFromText(msg.text);
+    } catch(err) {
+      this.botApi.sendMessage(msg.chat.id, err);
+      return;
+    }
+    const winnerPr = this.db.getGamerByUsername(msg.chat.id, winnerUsername);
+    const looserPr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
+    this.changeScores(winnerPr, looserPr, msg);
+  }
+
+  protected changeScores(winnerPr: Promise<IGamer>, looserPr: Promise<IGamer>, msg: ITgMessage): void {
     Promise.all([winnerPr, looserPr])
       .then(gamers => {
         const winner = gamers[0];
@@ -95,7 +106,7 @@ export class Bot {
         const winnerUpdatePr = this.db.updateScore(winner, winnerScore);
         const loserUpdatePr = this.db.updateScore(looser, looserScore);
 
-        return Promise.all([winnerPr, looserPr])
+        return Promise.all([winnerUpdatePr, loserUpdatePr])
           .then(() => {
             let text = 'new scores:\n'
             text += `${winner.username} - ${winnerScore}\n`;
