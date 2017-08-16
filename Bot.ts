@@ -4,9 +4,12 @@ import { IGamer } from "./interfaces/IGamer";
 import { ITgMessage } from "./interfaces/ITgMessage";
 import { defaultScore } from "./rating/settings";
 import { createUsername, getUsernameFromText } from "./rating/utils";
+const EloRank = require('elo-rank');
 
 
 export class Bot {
+  protected eloRank = new EloRank();
+
   constructor(
     protected botApi: TelegramBot,
     protected db: IDb
@@ -26,7 +29,7 @@ export class Bot {
       username: createUsername(msg),
       score: defaultScore
     }
-    this.db.start(gamer)
+    this.db.create(gamer)
       .then(() => {
         this.botApi.sendMessage(msg.chat.id, 'Wellcome ' + gamer.username);
       })
@@ -78,11 +81,25 @@ export class Bot {
     }
     const looserPr = this.db.getGamerByUsername(msg.chat.id, loserUsername);
     const winnerPr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
-    Promise.all([looserPr])
+    Promise.all([winnerPr, looserPr])
       .then(gamers => {
         const winner = gamers[0];
         const looser = gamers[1];
-        this.botApi.sendMessage(msg.chat.id, 'OK');
+        
+
+        var expectedWinnerScore = this.eloRank.getExpected(winner.score, looser.score);
+        var expectedLoserScore = this.eloRank.getExpected(looser.score, winner.score);
+
+        const winnerScore = this.eloRank.updateRating(expectedWinnerScore, 1, winner.score);
+        const looserScore = this.eloRank.updateRating(expectedLoserScore, 0, looser.score);
+
+        const winnerUpdatePr = this.db.updateScore(winner, winnerScore);
+        const loserUpdatePr = this.db.updateScore(looser, looserScore);
+
+        return Promise.all([winnerPr, looserPr])
+          .then(() => {
+            this.botApi.sendMessage(msg.chat.id, 'OK');
+          })
       })
       .catch((err: any) => {
         this.sendError(msg, err);

@@ -1,1 +1,1 @@
-export const defaultScore = 1200;
+export const defaultScore = 1000;

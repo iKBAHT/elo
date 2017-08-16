@@ -10,7 +10,7 @@ const db: Database = new sqlite3.Database(file);
 const noResultMessage = 'no result';
 
 export class SqlLiteManager implements IDb {
-  start(g: IGamer): Promise<void> {
+  create(g: IGamer): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getGamer(g).then(
         () => { 
@@ -34,6 +34,20 @@ export class SqlLiteManager implements IDb {
         }
       );
     })
+  }
+
+  updateScore(gamerId: IGamerId, score: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE gamer SET score = ${score} WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
+        (error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+    });
   }
 
   getGamer(gamerId: IGamerId): Promise<IGamer> {
