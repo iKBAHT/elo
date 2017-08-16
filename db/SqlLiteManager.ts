@@ -86,7 +86,7 @@ export class SqlLiteManager implements IDb {
   getGroupGamers(groupId: number): Promise<Array<IGamer>> {
     return new Promise((resolve, reject) => {
       db.all(
-        `SELECT * FROM gamer WHERE groupId = ${groupId} ORDER BY score`,
+        `SELECT * FROM gamer WHERE groupId = ${groupId} ORDER BY score DESC`,
         (error, rows) => {
           if (error) {
             reject(error);
