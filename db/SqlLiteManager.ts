@@ -1,5 +1,5 @@
 import { IDb } from "./IDb";
-import { IGamer, GamerId } from "../interfaces/IGamer";
+import { IGamer, IGamerId } from "../interfaces/IGamer";
 import { verbose, Database } from 'sqlite3';
 import { runMigration1 } from "./migration";
 const sqlite3: any = verbose();
@@ -11,25 +11,32 @@ const db: Database = new sqlite3.Database(file);
 export class SqlLiteManager implements IDb {
   start(g: IGamer): Promise<void> {
     return new Promise((resolve, reject) => {
-      db.run("INSERT INTO gamer VALUES(?, ?, ?, ?)", [g.id, g.userId, g.username, g.score], (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
+      db.run(
+        'INSERT INTO gamer VALUES(?, ?, ?, ?)',
+        [g.groupId, g.userId, g.username, g.score],
+        (error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
     })
   }
 
-  getScore(id: GamerId): Promise<number> {
+  getScore(gamerId: IGamerId): Promise<number> {
     return new Promise((resolve, reject) => {
-      db.each("SELECT score FROM gamer WHERE id = " + id, function (error, row) {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(row.score);
-        }
-      });
+      db.all(
+        `SELECT score FROM gamer WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
+        (error, rows) => {
+          if (error) {
+            reject(error);
+          } else if (rows.length !== 1) {
+            reject(rows.length ? 'to many results' : 'no result');
+          } else {
+            resolve(rows[0].score);
+          }
+        });
     })
   }
 }

@@ -1,8 +1,11 @@
-export interface IGamer {
-  id: GamerId; // tg user id + tg group id
+export interface IGamer extends IGamerId {
+  groupId: number; // tg group id
   userId: number; // tg user id
   username: string; // tg username
   score: number;
 }
 
-export type GamerId = string;
+export interface IGamerId {
+  groupId: number; // tg group id
+  userId: number; // tg user id
+}

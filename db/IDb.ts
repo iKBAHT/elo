@@ -1,7 +1,7 @@
-import { IGamer, GamerId } from "../interfaces/IGamer";
+import { IGamer, GamerId, IGamerId } from "../interfaces/IGamer";
 
 
 export interface IDb {
   start(g: IGamer): Promise<void>;
-  getScore(id: GamerId): Promise<number>;
+  getScore(id: IGamerId): Promise<number>;
 }
