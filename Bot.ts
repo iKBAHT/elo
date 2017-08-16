@@ -85,7 +85,6 @@ export class Bot {
       .then(gamers => {
         const winner = gamers[0];
         const looser = gamers[1];
-        
 
         var expectedWinnerScore = this.eloRank.getExpected(winner.score, looser.score);
         var expectedLoserScore = this.eloRank.getExpected(looser.score, winner.score);
@@ -98,8 +97,11 @@ export class Bot {
 
         return Promise.all([winnerPr, looserPr])
           .then(() => {
-            this.botApi.sendMessage(msg.chat.id, 'OK');
-          })
+            let text = 'new scores:\n'
+            text += `${winner.username} - ${winnerScore}\n`;
+            text += `${looser.username} - ${looserScore}`;
+            this.botApi.sendMessage(msg.chat.id, text);
+          });
       })
       .catch((err: any) => {
         this.sendError(msg, err);
