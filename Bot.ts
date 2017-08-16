@@ -12,8 +12,9 @@ export class Bot {
   ) { }
 
   init(): void {
-    this.botApi.onText(/\/start/, this.start);
-    this.botApi.onText(/\/score/, this.getScore);
+    this.botApi.onText(/\/start$/, this.start);
+    this.botApi.onText(/\/score$/, this.getScore);
+    this.botApi.onText(/\/scores$/, this.getAllScores);
   }
 
   protected start = (msg: ITgMessage): void => {
@@ -36,6 +37,24 @@ export class Bot {
     this.db.getScore({ userId: msg.from.id, groupId: msg.chat.id })
       .then(score => {
         this.botApi.sendMessage(msg.chat.id, msg.from.username + ' score ' + score);
+      })
+      .catch((err: any) => {
+        this.botApi.sendMessage(msg.chat.id, 'Some error - ' + JSON.stringify(err));
+      });
+  }
+
+  protected getAllScores = (msg: ITgMessage): void => {
+    this.db.getAllScores(msg.chat.id)
+      .then(gamers => {
+        let text = 'scores:\n';
+        for (let i = 0; i < gamers.length; ++i) {
+          const gamer = gamers[i];
+          text += `${gamer.username} - ${gamer.score}`;
+          if (i !== gamers.length - 1) {
+            text += '\n';
+          }
+        }
+        this.botApi.sendMessage(msg.chat.id, text);
       })
       .catch((err: any) => {
         this.botApi.sendMessage(msg.chat.id, 'Some error - ' + JSON.stringify(err));

@@ -39,4 +39,19 @@ export class SqlLiteManager implements IDb {
         });
     })
   }
+
+  getAllScores(groupId: number): Promise<Array<IGamer>> {
+    return new Promise((resolve, reject) => {
+      db.all(
+        `SELECT groupId, userId, score, username FROM gamer WHERE groupId = ${groupId} ORDER BY
+ score`,
+        (error, rows) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(rows);
+          }
+        });
+    })
+  }
 }
