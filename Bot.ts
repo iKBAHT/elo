@@ -21,6 +21,7 @@ export class Bot {
     this.botApi.onText(/^\/scores$/, this.getAllScores);
     this.botApi.onText(/^\/iwon/, this.win);
     this.botApi.onText(/^\/ilost/, this.lose);
+    this.botApi.onText(/^\/help/, this.help);
   }
 
   protected start = (msg: ITgMessage): void => {
@@ -89,6 +90,16 @@ export class Bot {
     const winnerPr = this.db.getGamerByUsername(msg.chat.id, winnerUsername);
     const looserPr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
     this.changeScores(winnerPr, looserPr, msg);
+  }
+
+  protected help = (msg: ITgMessage): void => {
+    let text = '';
+    text += '/start - добивиться в рейтинг\n';
+    text += '/score - очки участника\n';
+    text += '/scores - общий рейтинг\n';
+    text += '/iwon username - победа написавшего над username\n';
+    text += '/ilost username - поражение написавшего от username\n';
+    this.botApi.sendMessage(msg.chat.id, text);
   }
 
   protected changeScores(winnerPr: Promise<IGamer>, looserPr: Promise<IGamer>, msg: ITgMessage): void {
