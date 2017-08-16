@@ -7,20 +7,32 @@ const file = 'db/elo.db';
 const db: Database = new sqlite3.Database(file);
 
 // runMigration1(db);
+const noResultMessage = 'no result';
 
 export class SqlLiteManager implements IDb {
   start(g: IGamer): Promise<void> {
     return new Promise((resolve, reject) => {
-      db.run(
-        'INSERT INTO gamer VALUES(?, ?, ?, ?)',
-        [g.groupId, g.userId, g.username, g.score],
-        (error) => {
-          if (error) {
-            reject(error);
+      this.getScore(g).then(
+        () => { 
+          reject('repeated insertion');
+        },
+        (err) => { 
+          if (err === noResultMessage) {
+            db.run(
+              'INSERT INTO gamer VALUES(?, ?, ?, ?)',
+              [g.groupId, g.userId, g.username, g.score],
+              (error) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  resolve();
+                }
+              });
           } else {
-            resolve();
+            reject('cannot insert');
           }
-        });
+        }
+      );
     })
   }
 
@@ -32,7 +44,7 @@ export class SqlLiteManager implements IDb {
           if (error) {
             reject(error);
           } else if (rows.length !== 1) {
-            reject(rows.length ? 'to many results' : 'no result');
+            reject(rows.length ? 'to many results' : noResultMessage);
           } else {
             resolve(rows[0]);
           }
