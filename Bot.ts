@@ -16,12 +16,12 @@ export class Bot {
   ) { }
 
   init(): void {
-    this.botApi.onText(/^\/start$/, this.start);
-    this.botApi.onText(/^\/score$/, this.getScore);
-    this.botApi.onText(/^\/scores$/, this.getAllScores);
-    this.botApi.onText(/^\/iwon/, this.win);
-    this.botApi.onText(/^\/ilost/, this.lose);
-    this.botApi.onText(/^\/help/, this.help);
+    this.botApi.onText(/^\/start$/i, this.start);
+    this.botApi.onText(/^\/score$/i, this.getScore);
+    this.botApi.onText(/^\/scores$/i, this.getAllScores);
+    this.botApi.onText(/^\/iwon/i, this.win);
+    this.botApi.onText(/^\/ilost/i, this.lose);
+    this.botApi.onText(/^\/help/i, this.help);
   }
 
   protected start = (msg: ITgMessage): void => {
