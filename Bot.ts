@@ -33,7 +33,7 @@ export class Bot {
     }
     this.db.create(gamer)
       .then(() => {
-        this.botApi.sendMessage(msg.chat.id, 'Wellcome ' + gamer.username);
+        this.botApi.sendMessage(msg.chat.id, 'Welcome ' + gamer.username);
       })
       .catch((err: any) => {
         this.sendError(msg, err);
