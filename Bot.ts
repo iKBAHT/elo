@@ -21,7 +21,7 @@ export class Bot {
     this.botApi.onText(/^\/scores$/i, this.getAllScores);
     this.botApi.onText(/^\/iwon/i, this.win);
     this.botApi.onText(/^\/ilost/i, this.lose);
-    this.botApi.onText(/^\/help/i, this.help);
+    this.botApi.onText(/^\/help$/i, this.help);
   }
 
   protected start = (msg: ITgMessage): void => {
