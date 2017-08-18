@@ -103,10 +103,12 @@ export class Bot {
   }
 
   protected changeScores(winnerPr: Promise<IGamer>, looserPr: Promise<IGamer>, msg: ITgMessage): void {
-    Promise.all([winnerPr, looserPr])
+    const championPr = this.db.getTopGroupGamer(msg.chat.id);
+    Promise.all([winnerPr, looserPr, championPr])
       .then(gamers => {
         const winner = gamers[0];
         const looser = gamers[1];
+        const champion = gamers[2];
 
         var expectedWinnerScore = this.eloRank.getExpected(winner.score, looser.score);
         var expectedLoserScore = this.eloRank.getExpected(looser.score, winner.score);
@@ -123,6 +125,14 @@ export class Bot {
             text += `${winner.username} - ${winnerScore}\n`;
             text += `${looser.username} - ${looserScore}`;
             this.botApi.sendMessage(msg.chat.id, text);
+
+            return this.db.getTopGroupGamer(msg.chat.id)
+              .then(newChampion => {
+                if (newChampion.userId !== champion.userId) {
+                  let newChampionText = 'We have the new leader - ' + newChampion.username;
+                  this.botApi.sendMessage(msg.chat.id, newChampionText);
+                }
+              });
           });
       })
       .catch((err: any) => {

@@ -7,4 +7,5 @@ export interface IDb {
   getGamer(id: IGamerId): Promise<IGamer>;
   getGamerByUsername(groupId: number, username: string): Promise<IGamer>;
   getGroupGamers(groupId: number): Promise<Array<IGamer>>;
+  getTopGroupGamer(groupId: number): Promise<IGamer>;
 }

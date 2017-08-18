@@ -33,7 +33,7 @@ export class SqlLiteManager implements IDb {
           }
         }
       );
-    })
+    });
   }
 
   updateScore(gamerId: IGamerId, score: number): Promise<void> {
@@ -63,7 +63,7 @@ export class SqlLiteManager implements IDb {
             resolve(rows[0]);
           }
         });
-    })
+    });
   }
 
   getGamerByUsername(groupId: number, username: string): Promise<IGamer> {
@@ -80,7 +80,7 @@ export class SqlLiteManager implements IDb {
             resolve(rows[0]);
           }
         });
-    })
+    });
   }
 
   getGroupGamers(groupId: number): Promise<Array<IGamer>> {
@@ -95,5 +95,10 @@ export class SqlLiteManager implements IDb {
           }
         });
     })
+  }
+
+  getTopGroupGamer(groupId: number): Promise<IGamer> {
+    return this.getGroupGamers(groupId)
+      .then(gamers => gamers[0]);
   }
 }
