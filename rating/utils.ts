@@ -6,9 +6,13 @@ export function createUsername(msg: ITgMessage): string {
 }
 
 export function getUsernameFromText(text: string): string {
-  const words = text.split(' ');
+  const words = text.trim().split(' ');
   if (words.length !== 2) {
     throw 'wrong command format';
   }
-  return words[1];
+  let secondWord = words[1];
+  if (secondWord.charAt(0) === '@') {
+    secondWord = secondWord.substr(1);
+  }
+  return secondWord;
 }
