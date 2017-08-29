@@ -116,12 +116,14 @@ export class Bot {
         const winnerScore = this.eloRank.updateRating(expectedWinnerScore, 1, winner.score);
         const looserScore = this.eloRank.updateRating(expectedLoserScore, 0, looser.score);
 
+        const deltaScore = winnerScore - winner.score;
+
         const winnerUpdatePr = this.db.updateScore(winner, winnerScore);
         const loserUpdatePr = this.db.updateScore(looser, looserScore);
 
         return Promise.all([winnerUpdatePr, loserUpdatePr])
           .then(() => {
-            let text = 'new scores:\n'
+            let text = `new scores (diff ${deltaScore}):\n`;
             text += `${winner.username} - ${winnerScore}\n`;
             text += `${looser.username} - ${looserScore}`;
             this.botApi.sendMessage(msg.chat.id, text);
