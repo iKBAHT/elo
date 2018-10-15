@@ -3,7 +3,7 @@ import { IDb } from "./db/IDb";
 import { IGamer } from "./interfaces/IGamer";
 import { ITgMessage } from "./interfaces/ITgMessage";
 import { defaultScore } from "./rating/settings";
-import { createUsername, getUsernameFromText } from "./rating/utils";
+import { createUsername, getUsernameFromText, get3UsernamesFromText } from "./rating/utils";
 const EloRank = require('elo-rank');
 
 
@@ -22,6 +22,8 @@ export class Bot {
     this.botApi.onText(/^\/iwon/i, this.win);
     this.botApi.onText(/^\/ilost/i, this.lose);
     this.botApi.onText(/^\/help$/i, this.help);
+    this.botApi.onText(/^\/wewon/i, this.weWin);
+    this.botApi.onText(/^\/welost/i, this.weLose);
   }
 
   protected start = (msg: ITgMessage): void => {
@@ -71,7 +73,7 @@ export class Bot {
   protected win = (msg: ITgMessage): void => {
     try {
       var loserUsername = getUsernameFromText(msg.text);
-    } catch(err) {
+    } catch (err) {
       this.botApi.sendMessage(msg.chat.id, err);
       return;
     }
@@ -83,7 +85,7 @@ export class Bot {
   protected lose = (msg: ITgMessage): void => {
     try {
       var winnerUsername = getUsernameFromText(msg.text);
-    } catch(err) {
+    } catch (err) {
       this.botApi.sendMessage(msg.chat.id, err);
       return;
     }
@@ -110,22 +112,12 @@ export class Bot {
         const looser = gamers[1];
         const champion = gamers[2];
 
-        var expectedWinnerScore = this.eloRank.getExpected(winner.score, looser.score);
-        var expectedLoserScore = this.eloRank.getExpected(looser.score, winner.score);
-
-        const winnerScore = this.eloRank.updateRating(expectedWinnerScore, 1, winner.score);
-        const looserScore = this.eloRank.updateRating(expectedLoserScore, 0, looser.score);
-
-        const deltaScore = winnerScore - winner.score;
-
-        const winnerUpdatePr = this.db.updateScore(winner, winnerScore);
-        const loserUpdatePr = this.db.updateScore(looser, looserScore);
-
-        return Promise.all([winnerUpdatePr, loserUpdatePr])
-          .then(() => {
+        return this.updateScores(winner, looser)
+          .then(info => {
+            const deltaScore = info.winnerScore - winner.score;
             let text = `new scores (diff ${deltaScore}):\n`;
-            text += `${winner.username} - ${winnerScore}\n`;
-            text += `${looser.username} - ${looserScore}`;
+            text += `${winner.username} - ${info.winnerScore}\n`;
+            text += `${looser.username} - ${info.looserScore}`;
             this.botApi.sendMessage(msg.chat.id, text);
 
             return this.db.getTopGroupGamer(msg.chat.id)
@@ -142,8 +134,123 @@ export class Bot {
       });
   }
 
+  protected weWin = (msg: ITgMessage): void => {
+    try {
+      var usernames = get3UsernamesFromText(msg.text);
+    } catch (err) {
+      this.botApi.sendMessage(msg.chat.id, err);
+      return;
+    }
+    const winner1Pr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
+    const winner2Pr = this.db.getGamerByUsername(msg.chat.id, usernames[0]);
+    const looser1Pr = this.db.getGamerByUsername(msg.chat.id, usernames[1]);
+    const looser2Pr = this.db.getGamerByUsername(msg.chat.id, usernames[2]);
+    this.changeScores2x2(winner1Pr, winner2Pr, looser1Pr, looser2Pr, msg);
+  }
+
+  protected weLose = (msg: ITgMessage): void => {
+    try {
+      var usernames = get3UsernamesFromText(msg.text);
+    } catch (err) {
+      this.botApi.sendMessage(msg.chat.id, err);
+      return;
+    }
+    const looser1Pr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
+    const looser2Pr = this.db.getGamerByUsername(msg.chat.id, usernames[0]);
+    const winner1Pr = this.db.getGamerByUsername(msg.chat.id, usernames[1]);
+    const winner2Pr  = this.db.getGamerByUsername(msg.chat.id, usernames[2]);
+    this.changeScores2x2(winner1Pr, winner2Pr, looser1Pr, looser2Pr, msg);
+  }
+
+  protected changeScores2x2(
+    winner1Pr: Promise<IGamer>, winner2Pr: Promise<IGamer>,
+    looser1Pr: Promise<IGamer>, looser2Pr: Promise<IGamer>,
+    msg: ITgMessage
+  ): void {
+    const championPr = this.db.getTopGroupGamer(msg.chat.id);
+    Promise.all([winner1Pr, winner2Pr, looser1Pr, looser2Pr, championPr])
+      .then(gamers => {
+        const winner1 = gamers[0];
+        const winner2 = gamers[1];
+        const looser1 = gamers[2];
+        const looser2 = gamers[3];
+        const champion = gamers[4];
+
+        let strongWinner: IGamer;
+        let weakWinner: IGamer;
+        if (winner1.score > winner2.score) {
+          strongWinner = winner1;
+          weakWinner = winner2;
+        } else {
+          strongWinner = winner2;
+          weakWinner = winner1;
+        }
+
+        let strongLooser: IGamer;
+        let weakLooser: IGamer;
+        if (looser1.score > looser2.score) {
+          strongLooser = looser1;
+          weakLooser = looser2;
+        } else {
+          strongLooser = looser2;
+          weakLooser = looser1;
+        }
+
+        const firstUpdate = this.updateScores(strongWinner, strongLooser);
+        const secondUpdate = this.updateScores(weakWinner, weakLooser);
+        return Promise.all([firstUpdate, secondUpdate])
+          .then(arg => {
+            const strongPairInfo = arg[0];
+            const weakPairInfo = arg[1];
+
+            let text = `new scores:\n`;
+            text += `${strongWinner.username} - ${strongPairInfo.winnerScore}\n`;
+            text += `${weakWinner.username} - ${weakPairInfo.winnerScore}\n`;
+            text += `${strongLooser.username} - ${strongPairInfo.looserScore}\n`;
+            text += `${weakLooser.username} - ${weakPairInfo.looserScore}`;
+            this.botApi.sendMessage(msg.chat.id, text);
+
+            return this.db.getTopGroupGamer(msg.chat.id)
+              .then(newChampion => {
+                if (newChampion.userId !== champion.userId) {
+                  let newChampionText = 'We have the new leader - ' + newChampion.username;
+                  this.botApi.sendMessage(msg.chat.id, newChampionText);
+                }
+              });
+          });
+      })
+      .catch((err: any) => {
+        this.sendError(msg, err);
+      });
+  }
+
+  protected updateScores(winner: IGamer, looser: IGamer): Promise<UpdateScoresResult> {
+    const expectedWinnerScore = this.eloRank.getExpected(winner.score, looser.score);
+    const expectedLoserScore = this.eloRank.getExpected(looser.score, winner.score);
+
+    const winnerScore = this.eloRank.updateRating(expectedWinnerScore, 1, winner.score);
+    const looserScore = this.eloRank.updateRating(expectedLoserScore, 0, looser.score);
+
+    const winnerUpdatePr = this.db.updateScore(winner, winnerScore);
+    const loserUpdatePr = this.db.updateScore(looser, looserScore);
+
+    return Promise
+      .all([winnerUpdatePr, loserUpdatePr])
+      .then(() => {
+        return {
+          winnerScore,
+          looserScore,
+        }
+      });
+  }
+
   protected sendError(msg: ITgMessage, error: any): void {
     const text: string = typeof error === 'string' ? error : JSON.stringify(error);
     this.botApi.sendMessage(msg.chat.id, 'Some error - ' + text);
   }
+}
+
+interface UpdateScoresResult {
+  winnerScore: number;
+  looserScore: number;
 }
