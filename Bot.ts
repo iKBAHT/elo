@@ -16,7 +16,7 @@ export class Bot {
   ) { }
 
   init(): void {
-    this.botApi.onText(/^\/start$/i, this.start);
+    this.botApi.onText(/^\/join$/i, this.join);
     this.botApi.onText(/^\/score$/i, this.getScore);
     this.botApi.onText(/^\/scores$/i, this.getAllScores);
     this.botApi.onText(/^\/iwon/i, this.win);
@@ -26,7 +26,7 @@ export class Bot {
     this.botApi.onText(/^\/welost/i, this.weLose);
   }
 
-  protected start = (msg: ITgMessage): void => {
+  protected join = (msg: ITgMessage): void => {
     const gamer: IGamer = {
       groupId: msg.chat.id,
       userId: msg.from.id,
@@ -96,11 +96,13 @@ export class Bot {
 
   protected help = (msg: ITgMessage): void => {
     let text = '';
-    text += '/start - добивиться в рейтинг\n';
-    text += '/score - очки участника\n';
-    text += '/scores - общий рейтинг\n';
-    text += '/iwon username - победа написавшего над username\n';
-    text += '/ilost username - поражение написавшего от username\n';
+    text += '/join - join to the raiting\n';
+    text += '/score - get your score\n';
+    text += '/scores - get total scores\n';
+    text += '/iwon username - your victory over username\n';
+    text += '/ilost username - your defeat from username\n';
+    text += '/wewon partner opponent1 opponent2 - your and partners victory over opponent1 and opponent2\n';
+    text += '/welost partner opponent1 opponent2 - your and partner defeat for opponent1 and opponent2\n';
     this.botApi.sendMessage(msg.chat.id, text);
   }
 
