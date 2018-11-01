@@ -38,35 +38,28 @@ export class Bot {
         this.botApi.sendMessage(msg.chat.id, 'Welcome ' + gamer.username);
       })
       .catch((err: any) => {
-        this.sendError(msg, err);
+        this.sendError(msg.chat.id, err);
       });
   }
 
   protected getScore = (msg: ITgMessage): void => {
     this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id })
       .then(gamer => {
-        this.botApi.sendMessage(msg.chat.id, `*${gamer.username}  score  ${gamer.score}*`, { parse_mode: 'markdown' });
+        this.botApi.sendMessage(msg.chat.id, `${gamer.username}  score  ${gamer.score}`);
       })
       .catch((err: any) => {
-        this.sendError(msg, err);
+        this.sendError(msg.chat.id, err);
       });
   }
 
   protected getAllScores = (msg: ITgMessage): void => {
-    this.db.getGroupGamers(msg.chat.id)
-      .then(gamers => {
-        let text = 'scores:\n';
-        for (let i = 0; i < gamers.length; ++i) {
-          const gamer = gamers[i];
-          text += `${gamer.username} - ${gamer.score}`;
-          if (i !== gamers.length - 1) {
-            text += '\n';
-          }
-        }
+    this.getScores(msg.chat.id)
+      .then(text => {
+        text = 'scores:\n' + text;
         this.botApi.sendMessage(msg.chat.id, text);
       })
       .catch((err: any) => {
-        this.sendError(msg, err);
+        this.sendError(msg.chat.id, err);
       });
   }
 
@@ -132,7 +125,7 @@ export class Bot {
           });
       })
       .catch((err: any) => {
-        this.sendError(msg, err);
+        this.sendError(msg.chat.id, err);
       });
   }
 
@@ -201,16 +194,18 @@ export class Bot {
         const firstUpdate = this.updateScores(strongWinner, strongLooser);
         const secondUpdate = this.updateScores(weakWinner, weakLooser);
         return Promise.all([firstUpdate, secondUpdate])
-          .then(arg => {
-            const strongPairInfo = arg[0];
-            const weakPairInfo = arg[1];
-
-            let text = `new scores:\n`;
-            text += `${strongWinner.username} - ${strongPairInfo.winnerScore}\n`;
-            text += `${weakWinner.username} - ${weakPairInfo.winnerScore}\n`;
-            text += `${strongLooser.username} - ${strongPairInfo.looserScore}\n`;
-            text += `${weakLooser.username} - ${weakPairInfo.looserScore}`;
-            this.botApi.sendMessage(msg.chat.id, text);
+          .then(() => {
+            const usernames = [
+              strongWinner.username,
+              weakWinner.username,
+              strongLooser.username,
+              weakLooser.username
+            ]
+            this.getScores(msg.chat.id, usernames)
+              .then(text => {
+                text = `new scores:\n` + text;
+                this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'markdown' });
+              });
 
             return this.db.getTopGroupGamer(msg.chat.id)
               .then(newChampion => {
@@ -222,7 +217,7 @@ export class Bot {
           });
       })
       .catch((err: any) => {
-        this.sendError(msg, err);
+        this.sendError(msg.chat.id, err);
       });
   }
 
@@ -246,9 +241,33 @@ export class Bot {
       });
   }
 
-  protected sendError(msg: ITgMessage, error: any): void {
+  protected sendError(chatId: number, error: any): void {
     const text: string = typeof error === 'string' ? error : JSON.stringify(error);
-    this.botApi.sendMessage(msg.chat.id, 'Some error - ' + text);
+    this.botApi.sendMessage(chatId, 'Some error - ' + text);
+  }
+
+  protected getScores = (chatId: number, boldUserNames: Array<string> = []): Promise<string> => {
+    return this.db.getGroupGamers(chatId)
+      .then(gamers => {
+        let text = '';
+        for (let i = 0; i < gamers.length; ++i) {
+          const gamer = gamers[i];
+          const line = `${gamer.username} - ${gamer.score}`;
+          if (boldUserNames.indexOf(gamer.username) !== -1) {
+            text += '*' + line + '*';
+          } else {
+            text += line;
+          }
+          if (i !== gamers.length - 1) {
+            text += '\n';
+          }
+        }
+        return text;
+      })
+      .catch((err: any) => {
+        this.sendError(chatId, err);
+        return '';
+      });
   }
 }
 
