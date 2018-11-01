@@ -194,11 +194,11 @@ export class Bot {
         const secondUpdate = this.updateScores(weakWinner, weakLooser);
         return Promise.all([firstUpdate, secondUpdate])
           .then(([strongScore, weakScore]) => {
-            const playedGamers = [
-              new PlayedGamer(strongWinner.userId, strongScore.winnerScore - strongWinner.score),
-              new PlayedGamer(weakWinner.userId, weakScore.winnerScore - weakWinner.score),
-              new PlayedGamer(strongLooser.userId, strongScore.looserScore - strongLooser.score),
-              new PlayedGamer(weakLooser.userId, weakScore.looserScore - weakLooser.score),
+            const playedGamers: Array<PlayedGamer> = [
+              { id: strongWinner.userId, delta: strongScore.winnerScore - strongWinner.score },
+              { id: weakWinner.userId, delta: weakScore.winnerScore - weakWinner.score },
+              { id: strongLooser.userId, delta: strongScore.looserScore - strongLooser.score },
+              { id: weakLooser.userId, delta: weakScore.looserScore - weakLooser.score }
             ]
             this.getScores(msg.chat.id, playedGamers)
               .then(text => {
@@ -254,14 +254,12 @@ export class Bot {
         let text = '';
         for (let i = 0; i < gamers.length; ++i) {
           const gamer = gamers[i];
-          const line = `${i}. ${gamer.username} - ${gamer.score}`;
-          const playedGamer = playedGamers.find(g => g.id == gamer.userId)
+          const playedGamer = playedGamers.find(g => g.id == gamer.userId);
           if (playedGamer !== undefined) {
-            let emoji
-            if (playedGamer.delta > 0) emoji = '🌲'; else emoji = '🔻';
-            text += `<b> ${emoji} ` + line + ` (${playedGamer.delta})</b>`;
+            const emoji = playedGamer.delta > 0 ? '🌲' : '🔻';
+            text += `<b>${i}. ${emoji} ${gamer.username} - ${gamer.score} (${playedGamer.delta})</b>`;
           } else {
-            text += line;
+            text += `${i}. ${gamer.username} - ${gamer.score}`;
           }
           if (i !== gamers.length - 1) {
             text += '\n';
@@ -281,11 +279,7 @@ interface UpdateScoresResult {
   looserScore: number;
 }
 
-export class PlayedGamer {
+interface PlayedGamer {
   id: number;
   delta: number;
-  constructor(id: number, delta: number) {
-    this.id = id;
-    this.delta = delta;
-  }
 }
