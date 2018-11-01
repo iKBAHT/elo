@@ -6,7 +6,6 @@ import { defaultScore } from "./rating/settings";
 import { createUsername, getUsernameFromText, get3UsernamesFromText } from "./rating/utils";
 const EloRank = require('elo-rank');
 
-
 export class Bot {
   protected eloRank = new EloRank();
 
@@ -153,7 +152,7 @@ export class Bot {
     const looser1Pr = this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id });
     const looser2Pr = this.db.getGamerByUsername(msg.chat.id, usernames[0]);
     const winner1Pr = this.db.getGamerByUsername(msg.chat.id, usernames[1]);
-    const winner2Pr  = this.db.getGamerByUsername(msg.chat.id, usernames[2]);
+    const winner2Pr = this.db.getGamerByUsername(msg.chat.id, usernames[2]);
     this.changeScores2x2(winner1Pr, winner2Pr, looser1Pr, looser2Pr, msg);
   }
 
@@ -194,14 +193,14 @@ export class Bot {
         const firstUpdate = this.updateScores(strongWinner, strongLooser);
         const secondUpdate = this.updateScores(weakWinner, weakLooser);
         return Promise.all([firstUpdate, secondUpdate])
-          .then(() => {
-            const usernames = [
-              strongWinner.username,
-              weakWinner.username,
-              strongLooser.username,
-              weakLooser.username
+          .then(([strongScore, weakScore]) => {
+            const playedGamers = [
+              new PlayedGamer(strongWinner.userId, strongScore.winnerScore - strongWinner.score),
+              new PlayedGamer(weakWinner.userId, weakScore.winnerScore - weakWinner.score),
+              new PlayedGamer(strongLooser.userId, strongScore.looserScore - strongLooser.score),
+              new PlayedGamer(weakLooser.userId, weakScore.looserScore - weakLooser.score),
             ]
-            this.getScores(msg.chat.id, usernames)
+            this.getScores(msg.chat.id, playedGamers)
               .then(text => {
                 text = `new scores:\n` + text;
                 this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
@@ -246,15 +245,21 @@ export class Bot {
     this.botApi.sendMessage(chatId, 'Some error - ' + text);
   }
 
-  protected getScores = (chatId: number, boldUserNames: Array<string> = []): Promise<string> => {
+  protected getScores = (
+    chatId: number,
+    playedGamers: Array<PlayedGamer> = []
+  ): Promise<string> => {
     return this.db.getGroupGamers(chatId)
       .then(gamers => {
         let text = '';
         for (let i = 0; i < gamers.length; ++i) {
           const gamer = gamers[i];
           const line = `${i}. ${gamer.username} - ${gamer.score}`;
-          if (boldUserNames.indexOf(gamer.username) !== -1) {
-            text += '<b>' + line + '</b>';
+          const playedGamer = playedGamers.find(g => g.id == gamer.userId)
+          if (playedGamer !== undefined) {
+            let emoji
+            if (playedGamer.delta > 0) emoji = '🌲'; else emoji = '🔻';
+            text += `<b> ${emoji} ` + line + ` (${playedGamer.delta})</b>`;
           } else {
             text += line;
           }
@@ -274,4 +279,13 @@ export class Bot {
 interface UpdateScoresResult {
   winnerScore: number;
   looserScore: number;
+}
+
+export class PlayedGamer {
+  id: number;
+  delta: number;
+  constructor(id: number, delta: number) {
+    this.id = id;
+    this.delta = delta;
+  }
 }
