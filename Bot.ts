@@ -45,7 +45,7 @@ export class Bot {
   protected getScore = (msg: ITgMessage): void => {
     this.db.getGamer({ userId: msg.from.id, groupId: msg.chat.id })
       .then(gamer => {
-        this.botApi.sendMessage(msg.chat.id, gamer.username + ' score ' + gamer.score);
+        this.botApi.sendMessage(msg.chat.id, `*${gamer.username}  score  ${gamer.score}*`, { parse_mode: 'markdown' });
       })
       .catch((err: any) => {
         this.sendError(msg, err);
@@ -206,11 +206,11 @@ export class Bot {
             const weakPairInfo = arg[1];
 
             let text = `new scores:\n`;
-            text += `*${strongWinner.username} - ${strongPairInfo.winnerScore}*\n`;
-            text += `*${weakWinner.username} - ${weakPairInfo.winnerScore}*\n`;
+            text += `${strongWinner.username} - ${strongPairInfo.winnerScore}\n`;
+            text += `${weakWinner.username} - ${weakPairInfo.winnerScore}\n`;
             text += `${strongLooser.username} - ${strongPairInfo.looserScore}\n`;
             text += `${weakLooser.username} - ${weakPairInfo.looserScore}`;
-            this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'markdown' });
+            this.botApi.sendMessage(msg.chat.id, text);
 
             return this.db.getTopGroupGamer(msg.chat.id)
               .then(newChampion => {
