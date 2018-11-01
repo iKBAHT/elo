@@ -206,11 +206,11 @@ export class Bot {
             const weakPairInfo = arg[1];
 
             let text = `new scores:\n`;
-            text += `${strongWinner.username} - ${strongPairInfo.winnerScore}\n`;
-            text += `${weakWinner.username} - ${weakPairInfo.winnerScore}\n`;
+            text += `*${strongWinner.username} - ${strongPairInfo.winnerScore}*\n`;
+            text += `*${weakWinner.username} - ${weakPairInfo.winnerScore}*\n`;
             text += `${strongLooser.username} - ${strongPairInfo.looserScore}\n`;
             text += `${weakLooser.username} - ${weakPairInfo.looserScore}`;
-            this.botApi.sendMessage(msg.chat.id, text);
+            this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'markdown' });
 
             return this.db.getTopGroupGamer(msg.chat.id)
               .then(newChampion => {
