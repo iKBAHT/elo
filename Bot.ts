@@ -204,7 +204,7 @@ export class Bot {
             this.getScores(msg.chat.id, usernames)
               .then(text => {
                 text = `new scores:\n` + text;
-                this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'markdown' });
+                this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
               });
 
             return this.db.getTopGroupGamer(msg.chat.id)
@@ -252,9 +252,9 @@ export class Bot {
         let text = '';
         for (let i = 0; i < gamers.length; ++i) {
           const gamer = gamers[i];
-          const line = `${gamer.username} - ${gamer.score}`;
+          const line = `${i}. ${gamer.username} - ${gamer.score}`;
           if (boldUserNames.indexOf(gamer.username) !== -1) {
-            text += '*' + line + '*';
+            text += '<b>' + line + '</b>';
           } else {
             text += line;
           }
