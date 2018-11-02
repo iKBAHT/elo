@@ -256,8 +256,9 @@ export class Bot {
           const gamer = gamers[i];
           const playedGamer = playedGamers.find(g => g.id == gamer.userId);
           if (playedGamer !== undefined) {
+            const delta = playedGamer.delta > 0 ? '+${playedGamer.delta}' : playedGamer.delta;
             const emoji = playedGamer.delta > 0 ? '🌲' : '🔻';
-            text += `<b>${i + 1}. ${emoji} ${gamer.username} - ${gamer.score} (${playedGamer.delta})</b>`;
+            text += `<b>${i + 1}. ${emoji} ${gamer.username} - ${gamer.score} (${delta})</b>`;
           } else {
             text += `${i + 1}. ${gamer.username} - ${gamer.score}`;
           }
