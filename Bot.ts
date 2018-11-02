@@ -199,7 +199,7 @@ export class Bot {
               { id: weakWinner.userId, delta: weakScore.winnerScore - weakWinner.score },
               { id: strongLooser.userId, delta: strongScore.looserScore - strongLooser.score },
               { id: weakLooser.userId, delta: weakScore.looserScore - weakLooser.score }
-            ]
+            ];
             this.getScores(msg.chat.id, playedGamers)
               .then(text => {
                 text = `new scores:\n` + text;
@@ -254,13 +254,13 @@ export class Bot {
         let text = '';
         for (let i = 0; i < gamers.length; ++i) {
           const gamer = gamers[i];
-          const playedGamer = playedGamers.find(g => g.id == gamer.userId);
+          const playedGamer = playedGamers.find(g => g.id === gamer.userId);
+          const line = `${i + 1}. ${gamer.username} - ${gamer.score}`;
           if (playedGamer !== undefined) {
-            const emoji = playedGamer.delta > 0 ? '🌲' : '🔻';
             const sign = playedGamer.delta > 0 ? '+' : '';
-            text += `<b>${i}. ${emoji} ${gamer.username} - ${gamer.score} (${sign}${playedGamer.delta})</b>`;
+            text += `<b>${line} (${sign}${playedGamer.delta})</b>`;
           } else {
-            text += `${i}. ${gamer.username} - ${gamer.score}`;
+            text += line;
           }
           if (i !== gamers.length - 1) {
             text += '\n';
