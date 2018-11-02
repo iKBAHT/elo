@@ -257,8 +257,13 @@ export class Bot {
           const playedGamer = playedGamers.find(g => g.id == gamer.userId);
           if (playedGamer !== undefined) {
             const delta = playedGamer.delta > 0 ? '+${playedGamer.delta}' : playedGamer.delta;
-            const emoji = playedGamer.delta > 0 ? '🌲' : '🔻';
-            text += `<b>${i + 1}. ${emoji} ${gamer.username} - ${gamer.score} (${delta})</b>`;
+            let emoji = '';
+            if (playedGamer.delta > 0) {
+              emoji = ' 🌲';
+            } else if (playedGamer.delta < 0) {
+              emoji = ' 🔻';
+            }
+            text += `<b>${i + 1}. ${gamer.username} - ${gamer.score} (${delta}${emoji})</b>`;
           } else {
             text += `${i + 1}. ${gamer.username} - ${gamer.score}`;
           }
