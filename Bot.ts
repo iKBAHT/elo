@@ -257,7 +257,8 @@ export class Bot {
           const playedGamer = playedGamers.find(g => g.id == gamer.userId);
           if (playedGamer !== undefined) {
             const emoji = playedGamer.delta > 0 ? '🌲' : '🔻';
-            text += `<b>${i}. ${emoji} ${gamer.username} - ${gamer.score} (${playedGamer.delta})</b>`;
+            const sign = playedGamer.delta > 0 ? '+' : '';
+            text += `<b>${i}. ${emoji} ${gamer.username} - ${gamer.score} (${sign}${playedGamer.delta})</b>`;
           } else {
             text += `${i}. ${gamer.username} - ${gamer.score}`;
           }
