@@ -6,6 +6,8 @@ import { defaultScore } from "./rating/settings";
 import { createUsername, getUsernameFromText, get3UsernamesFromText } from "./rating/utils";
 const EloRank = require('elo-rank');
 
+const TEXT_PARSE_MODE = { parse_mode: 'HTML' };
+
 export class Bot {
   protected eloRank = new EloRank();
 
@@ -19,9 +21,11 @@ export class Bot {
     this.botApi.onText(/^\/score$/i, this.getScore);
     this.botApi.onText(/^\/scores$/i, this.getAllScores);
     this.botApi.onText(/^\/iwon/i, this.win);
+    this.botApi.onText(/^\/iw/i, this.win);
     this.botApi.onText(/^\/ilost/i, this.lose);
     this.botApi.onText(/^\/help$/i, this.help);
     this.botApi.onText(/^\/wewon/i, this.weWin);
+    this.botApi.onText(/^\/ww/i, this.weWin);
     this.botApi.onText(/^\/welost/i, this.weLose);
   }
 
@@ -88,14 +92,16 @@ export class Bot {
 
   protected help = (msg: ITgMessage): void => {
     let text = '';
-    text += '/join - join to the raiting\n';
-    text += '/score - get your score\n';
-    text += '/scores - get total scores\n';
-    text += '/iwon username - your victory over username\n';
-    text += '/ilost username - your defeat from username\n';
-    text += '/wewon partner opponent1 opponent2 - your and partners victory over opponent1 and opponent2\n';
-    text += '/welost partner opponent1 opponent2 - your and partner defeat for opponent1 and opponent2\n';
-    this.botApi.sendMessage(msg.chat.id, text);
+    text += '<b>/join</b> - join to the raiting\n';
+    text += '<b>/score</b> - get your score\n';
+    text += '<b>/scores</b> - get total scores\n';
+    text += '<b>/iwon</b> username - your victory over username\n';
+    text += '<b>/ilost</b> username - your defeat from username\n';
+    text += '<b>/wewon</b> partner opponent1 opponent2 - your and partners victory over opponent1 and opponent2\n';
+    text += '<b>/welost</b> partner opponent1 opponent2 - your and partner defeat for opponent1 and opponent2\n';
+    text += '<b>/iw</b> - alias for <b>/iwon</b>\n';
+    text += '<b>/ww</b> - alias for <b>/wewon</b>\n';
+    this.botApi.sendMessage(msg.chat.id, text, TEXT_PARSE_MODE);
   }
 
   protected changeScores(winnerPr: Promise<IGamer>, looserPr: Promise<IGamer>, msg: ITgMessage): void {
@@ -203,7 +209,7 @@ export class Bot {
             this.getScores(msg.chat.id, playedGamers)
               .then(text => {
                 text = `new scores:\n` + text;
-                this.botApi.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
+                this.botApi.sendMessage(msg.chat.id, text, TEXT_PARSE_MODE);
               });
 
             return this.db.getTopGroupGamer(msg.chat.id)
