@@ -176,35 +176,29 @@ export class Bot {
         const looser2 = gamers[3];
         const champion = gamers[4];
 
-        let strongWinner: IGamer;
-        let weakWinner: IGamer;
-        if (winner1.score > winner2.score) {
-          strongWinner = winner1;
-          weakWinner = winner2;
-        } else {
-          strongWinner = winner2;
-          weakWinner = winner1;
-        }
+        const winnerTeamAverage = Math.floor((winner1.score + winner2.score) / 2);
+        const loserTeamAverage = Math.floor((looser1.score + looser2.score) / 2);
+        const expectedWinnerDiffRatio = this.eloRank.getExpected(winnerTeamAverage, loserTeamAverage);
+        const expectedLooserDiffRatio = this.eloRank.getExpected(loserTeamAverage, winnerTeamAverage);
 
-        let strongLooser: IGamer;
-        let weakLooser: IGamer;
-        if (looser1.score > looser2.score) {
-          strongLooser = looser1;
-          weakLooser = looser2;
-        } else {
-          strongLooser = looser2;
-          weakLooser = looser1;
-        }
+        const winner1NewScore = this.eloRank.updateRating(expectedWinnerDiffRatio, 1, winner1.score);
+        const winner2NewScore = this.eloRank.updateRating(expectedWinnerDiffRatio, 1, winner2.score);
+        const looser1NewScore = this.eloRank.updateRating(expectedLooserDiffRatio, 0, looser1.score);
+        const looser2NewScore = this.eloRank.updateRating(expectedLooserDiffRatio, 0, looser2.score);
 
-        const firstUpdate = this.updateScores(strongWinner, strongLooser);
-        const secondUpdate = this.updateScores(weakWinner, weakLooser);
-        return Promise.all([firstUpdate, secondUpdate])
-          .then(([strongScore, weakScore]) => {
+        const winner1UpdatePr = this.db.updateScore(winner1, winner1NewScore);
+        const winner2UpdatePr = this.db.updateScore(winner2, winner2NewScore);
+        const looser1UpdatePr = this.db.updateScore(looser1, looser1NewScore);
+        const looser2UpdatePr = this.db.updateScore(looser2, looser2NewScore);
+
+        return Promise
+          .all([winner1UpdatePr, winner2UpdatePr, looser1UpdatePr, looser2UpdatePr])
+          .then(() => {
             const playedGamers: Array<PlayedGamer> = [
-              { id: strongWinner.userId, delta: strongScore.winnerScore - strongWinner.score },
-              { id: weakWinner.userId, delta: weakScore.winnerScore - weakWinner.score },
-              { id: strongLooser.userId, delta: strongScore.looserScore - strongLooser.score },
-              { id: weakLooser.userId, delta: weakScore.looserScore - weakLooser.score }
+              { id: winner1.userId, delta: winner1.score - winner1NewScore },
+              { id: winner2.userId, delta: winner2.score - winner2NewScore },
+              { id: looser1.userId, delta: looser1.score - looser1NewScore },
+              { id: looser2.userId, delta: looser2.score - looser2NewScore }
             ];
             this.getScores(msg.chat.id, playedGamers)
               .then(text => {
