@@ -183,8 +183,8 @@ export class Bot {
 
         const winner1NewScore = this.eloRank.updateRating(expectedWinnerDiffRatio, 1, winner1.score);
         const winner2NewScore = this.eloRank.updateRating(expectedWinnerDiffRatio, 1, winner2.score);
-        const looser1NewScore = this.eloRank.updateRating(expectedLooserDiffRatio, 0, looser1.score);
-        const looser2NewScore = this.eloRank.updateRating(expectedLooserDiffRatio, 0, looser2.score);
+        const looser1NewScore = Math.max(0, this.eloRank.updateRating(expectedLooserDiffRatio, 0, looser1.score));
+        const looser2NewScore = Math.max(0, this.eloRank.updateRating(expectedLooserDiffRatio, 0, looser2.score));
 
         const winner1UpdatePr = this.db.updateScore(winner1, winner1NewScore);
         const winner2UpdatePr = this.db.updateScore(winner2, winner2NewScore);
