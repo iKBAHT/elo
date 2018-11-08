@@ -195,10 +195,10 @@ export class Bot {
           .all([winner1UpdatePr, winner2UpdatePr, looser1UpdatePr, looser2UpdatePr])
           .then(() => {
             const playedGamers: Array<PlayedGamer> = [
-              { id: winner1.userId, delta: winner1.score - winner1NewScore },
-              { id: winner2.userId, delta: winner2.score - winner2NewScore },
-              { id: looser1.userId, delta: looser1.score - looser1NewScore },
-              { id: looser2.userId, delta: looser2.score - looser2NewScore }
+              { id: winner1.userId, delta: winner1NewScore - winner1.score},
+              { id: winner2.userId, delta: winner2NewScore - winner2.score },
+              { id: looser1.userId, delta: looser1NewScore - looser1.score },
+              { id: looser2.userId, delta: looser2NewScore - looser2.score }
             ];
             this.getScores(msg.chat.id, playedGamers)
               .then(text => {
