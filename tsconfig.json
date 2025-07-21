@@ -18,7 +18,7 @@
         "noResolve": false,
         "removeComments": true,
         "sourceMap": true,
-        "strictNullChecks": true,
+        "strictNullChecks": false,
         "target": "es5",
         "lib": [
             "dom", "es2015"

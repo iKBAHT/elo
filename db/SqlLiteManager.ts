@@ -1,7 +1,7 @@
-import { IDb } from "./IDb";
-import { IGamer, IGamerId } from "../interfaces/IGamer";
+import { IDb } from './IDb';
+import { IGamer, IGamerId } from '../interfaces/IGamer';
 import { verbose, Database } from 'sqlite3';
-import { runMigration1 } from "./migration";
+import { runMigration1 } from './migration';
 const sqlite3: any = verbose();
 const file = 'db/elo.db';
 const db: Database = new sqlite3.Database(file);
@@ -13,10 +13,10 @@ export class SqlLiteManager implements IDb {
   create(g: IGamer): Promise<void> {
     return new Promise((resolve, reject) => {
       this.getGamer(g).then(
-        () => { 
+        () => {
           reject('repeated insertion');
         },
-        (err) => { 
+        (err) => {
           if (err === noResultMessage) {
             db.run(
               'INSERT INTO gamer VALUES(?, ?, ?, ?)',
@@ -27,7 +27,8 @@ export class SqlLiteManager implements IDb {
                 } else {
                   resolve();
                 }
-              });
+              }
+            );
           } else {
             reject('cannot insert');
           }
@@ -46,7 +47,8 @@ export class SqlLiteManager implements IDb {
           } else {
             resolve();
           }
-        });
+        }
+      );
     });
   }
 
@@ -60,9 +62,10 @@ export class SqlLiteManager implements IDb {
           } else if (rows.length !== 1) {
             reject(rows.length ? 'to many results' : noResultMessage);
           } else {
-            resolve(rows[0]);
+            resolve(rows[0] as any);
           }
-        });
+        }
+      );
     });
   }
 
@@ -77,9 +80,10 @@ export class SqlLiteManager implements IDb {
           } else if (rows.length !== 1) {
             reject(rows.length ? 'to many results' : noResultMessage);
           } else {
-            resolve(rows[0]);
+            resolve(rows[0] as any);
           }
-        });
+        }
+      );
     });
   }
 
@@ -91,14 +95,56 @@ export class SqlLiteManager implements IDb {
           if (error) {
             reject(error);
           } else {
-            resolve(rows);
+            resolve(rows as any);
           }
-        });
-    })
+        }
+      );
+    });
   }
 
   getTopGroupGamer(groupId: number): Promise<IGamer> {
-    return this.getGroupGamers(groupId)
-      .then(gamers => gamers[0]);
+    return this.getGroupGamers(groupId).then((gamers) => gamers[0]);
+  }
+
+  getAll(): Promise<Array<IGamer>> {
+    return new Promise((resolve, reject) => {
+      db.all(`SELECT * FROM gamer ORDER BY score DESC`, (error, rows) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(rows as any);
+        }
+      });
+    });
+  }
+
+  deleteGamer(groupId: number, username: string): Promise<IGamer> {
+    //     DELETE FROM users
+    // WHERE rowid = (
+    //   SELECT rowid FROM users
+    //   WHERE name = 'Иван'
+    //   LIMIT 1
+    // );
+    return new Promise((resolve, reject) => {
+      db.all(
+        `DELETE FROM gamer WHERE rowid = (
+            SELECT rowid FROM gamer
+            WHERE UPPER(username) = UPPER(?) AND groupId = ${groupId}
+            LIMIT 1
+        ) `,
+        [username],
+        (error, rows) => {
+          console.log(error);
+          console.log(rows);
+          if (error) {
+            reject(error);
+          } else if (rows.length !== 1) {
+            reject(rows.length ? 'to many results' : noResultMessage);
+          } else {
+            resolve(rows[0] as any);
+          }
+        }
+      );
+    });
   }
 }
