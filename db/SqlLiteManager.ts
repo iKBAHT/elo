@@ -1,12 +1,10 @@
 import { IDb } from './IDb';
 import { IGamer, IGamerId } from '../interfaces/IGamer';
 import { verbose, Database } from 'sqlite3';
-import { runMigration1 } from './migration';
 const sqlite3: any = verbose();
 const file = 'db/elo.db';
-const db: Database = new sqlite3.Database(file);
+export const db: Database = new sqlite3.Database(file);
 
-// runMigration1(db);
 const noResultMessage = 'no result';
 
 export class SqlLiteManager implements IDb {
@@ -19,8 +17,18 @@ export class SqlLiteManager implements IDb {
         (err) => {
           if (err === noResultMessage) {
             db.run(
-              'INSERT INTO gamer VALUES(?, ?, ?, ?)',
-              [g.groupId, g.userId, g.username, g.score],
+              'INSERT INTO gamer VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              [
+                g.groupId,
+                g.userId,
+                g.username,
+                g.score,
+                g.gamesCount,
+                g.winsCount,
+                g.marsWinsCount,
+                g.marsLoseCount,
+                g.bestScore
+              ],
               (error) => {
                 if (error) {
                   reject(error);
@@ -37,10 +45,22 @@ export class SqlLiteManager implements IDb {
     });
   }
 
-  updateScore(gamerId: IGamerId, score: number): Promise<void> {
+  updateGamer(g: IGamer): Promise<void> {
     return new Promise((resolve, reject) => {
       db.run(
-        `UPDATE gamer SET score = ${score} WHERE groupId = ${gamerId.groupId} AND userId = ${gamerId.userId}`,
+        `UPDATE gamer 
+        SET score = ?, gamesCount = ?, winsCount = ?, marsWinsCount = ?, marsLoseCount = ?, bestScore = ? 
+        WHERE groupId = ? AND userId = ?`,
+        [
+          g.score,
+          g.gamesCount,
+          g.winsCount,
+          g.marsWinsCount,
+          g.marsLoseCount,
+          g.bestScore,
+          g.groupId,
+          g.userId
+        ],
         (error) => {
           if (error) {
             reject(error);
@@ -106,25 +126,7 @@ export class SqlLiteManager implements IDb {
     return this.getGroupGamers(groupId).then((gamers) => gamers[0]);
   }
 
-  getAll(): Promise<Array<IGamer>> {
-    return new Promise((resolve, reject) => {
-      db.all(`SELECT * FROM gamer ORDER BY score DESC`, (error, rows) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(rows as any);
-        }
-      });
-    });
-  }
-
   deleteGamer(groupId: number, username: string): Promise<IGamer> {
-    //     DELETE FROM users
-    // WHERE rowid = (
-    //   SELECT rowid FROM users
-    //   WHERE name = 'Иван'
-    //   LIMIT 1
-    // );
     return new Promise((resolve, reject) => {
       db.all(
         `DELETE FROM gamer WHERE rowid = (

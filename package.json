@@ -4,7 +4,9 @@
   "description": "telegram bot to count elo raiting",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "ts-node index.ts",
+    "migration1": "ts-node migrationRunner.ts migration1",
+    "migration2": "ts-node migrationRunner.ts migration2"
   },
   "repository": {
     "type": "git",

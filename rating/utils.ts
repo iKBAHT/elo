@@ -1,8 +1,12 @@
-import { ITgMessage } from "../interfaces/ITgMessage";
-
+import { ITgMessage } from '../interfaces/ITgMessage';
 
 export function createUsername(msg: ITgMessage): string {
-  return msg.from.username || msg.from.last_name || msg.from.first_name || (Math.round(Math.random() * 1000) + '');
+  return (
+    msg.from.username ||
+    msg.from.last_name ||
+    msg.from.first_name ||
+    Math.round(Math.random() * 1000) + ''
+  );
 }
 
 /**
@@ -17,23 +21,14 @@ export function getUsernameFromText(text: string): string {
   return secondWord;
 }
 
-type usernames2x2 = [string, string, string];
-
-/**
- * example - '/command @name1 @name2 @name3'
- */
-export function get3UsernamesFromText(text: string): usernames2x2 {
-  const words = text.trim().split(' ');
-  if (words.length !== 4) {
-    throw 'wrong command format';
-  }
-  const usernames = [words[1], words[2], words[3]];
-  return usernames.map(removeDogFromStart) as usernames2x2;
-}
-
 function removeDogFromStart(word: string): string {
   if (word.charAt(0) === '@') {
     return word.substr(1);
   }
   return word;
+}
+
+// 0.1239 => 12.4%
+export function getPercentFormatting(value: number): string {
+  return Math.round(value * 1000) / 10 + '%';
 }

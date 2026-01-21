@@ -1,8 +1,11 @@
 export interface IGamer extends IGamerId {
-  groupId: number; // tg group id
-  userId: number; // tg user id
   username: string; // tg username
   score: number;
+  gamesCount: number;
+  winsCount: number;
+  marsWinsCount: number;
+  marsLoseCount: number;
+  bestScore: number;
 }
 
 export interface IGamerId {
