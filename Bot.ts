@@ -224,24 +224,26 @@ export class Bot {
     ) as number;
 
     // update winner info
-    winner.bestScore = Math.max(newWinnerScore, winner.bestScore);
-    winner.score = newWinnerScore;
-    winner.gamesCount++;
-    winner.winsCount++;
+    const updatedWinner = Object.assign({}, winner);
+    updatedWinner.bestScore = Math.max(newWinnerScore, winner.bestScore);
+    updatedWinner.score = newWinnerScore;
+    updatedWinner.gamesCount++;
+    updatedWinner.winsCount++;
     if (isMars) {
-      winner.marsWinsCount++;
+      updatedWinner.marsWinsCount++;
     }
 
     // update looser info
-    looser.bestScore = Math.max(newLoserScore, looser.bestScore);
-    looser.score = newLoserScore;
-    looser.gamesCount++;
+    const updatedLooser = Object.assign({}, looser);
+    updatedLooser.bestScore = Math.max(newLoserScore, looser.bestScore);
+    updatedLooser.score = newLoserScore;
+    updatedLooser.gamesCount++;
     if (isMars) {
-      looser.marsLoseCount++;
+      updatedLooser.marsLoseCount++;
     }
 
-    const winnerUpdatePr = this.db.updateGamer(winner);
-    const loserUpdatePr = this.db.updateGamer(looser);
+    const winnerUpdatePr = this.db.updateGamer(updatedWinner);
+    const loserUpdatePr = this.db.updateGamer(updatedLooser);
 
     return Promise.all([winnerUpdatePr, loserUpdatePr]).then(() => {
       return {
@@ -302,7 +304,7 @@ export class Bot {
 
           text += line;
           if (i !== gamers.length - 1) {
-            text += '\n';
+            text += '\n\n';
           }
         }
         return text;
