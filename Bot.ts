@@ -25,9 +25,9 @@ export class Bot {
     this.botApi.onText(/^\/join$/i, this.join);
     this.botApi.onText(/^\/scores$/i, this.getAllScores);
     this.botApi.onText(/^\/stats$/i, this.getAllStats);
-    this.botApi.onText(/^\/iwon/i, this.win);
+    this.botApi.onText(/^\/iwon /i, this.win);
     this.botApi.onText(/^\/iwonWithMars/i, this.winMars);
-    this.botApi.onText(/^\/ilost/i, this.lose);
+    this.botApi.onText(/^\/ilost /i, this.lose);
     this.botApi.onText(/^\/ilostWithMars/i, this.loseMars);
     this.botApi.onText(/^\/help$/i, this.help);
   }
