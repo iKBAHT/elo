@@ -26,8 +26,12 @@
     "dotenv": "17.2.0",
     "elo-rank": "1.0.3",
     "node-telegram-bot-api": "0.66.0",
-    "sqlite3": "5.1.7",
+    "sqlite3": "^5.1.7",
     "ts-node": "10.9.2",
+    "tslib": "^2.8.1",
     "typescript": "5.8.2"
+  },
+  "allowScripts": {
+    "sqlite3@5.1.7": true
   }
 }
