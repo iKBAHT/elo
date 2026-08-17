@@ -1,14 +1,26 @@
-export interface IGamer extends IGamerId {
-  username: string; // tg username
+export interface IGamer {
+  chat_id: number;
+  user_id: number;
   score: number;
-  gamesCount: number;
-  winsCount: number;
-  marsWinsCount: number;
-  marsLoseCount: number;
-  bestScore: number;
+  best_score: number;
+  created_at: number;
+  updated_at: number;
+  deleted_at: number | null;
 }
 
 export interface IGamerId {
-  groupId: number; // tg group id
-  userId: number; // tg user id
+  chat_id: number;
+  user_id: number;
+}
+
+export interface GamerWithStats {
+  chat_id: number;
+  user_id: number;
+  score: number;
+  best_score: number;
+  username: string;
+  games_count: number;
+  wins_count: number;
+  mars_wins_count: number;
+  mars_loses_count: number;
 }
