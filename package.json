@@ -6,7 +6,9 @@
   "scripts": {
     "start": "ts-node index.ts",
     "migration1": "ts-node migrationRunner.ts migration1",
-    "migration2": "ts-node migrationRunner.ts migration2"
+    "migration2": "ts-node migrationRunner.ts migration2",
+    "migration3": "ts-node migrationRunner.ts migration3",
+    "migration4": "ts-node migrationRunner.ts migration4"
   },
   "repository": {
     "type": "git",
