@@ -1,14 +1,3 @@
-import { ITgMessage } from '../interfaces/ITgMessage';
-
-export function createUsername(msg: ITgMessage): string {
-  return (
-    msg.from.username ||
-    msg.from.last_name ||
-    msg.from.first_name ||
-    Math.round(Math.random() * 1000) + ''
-  );
-}
-
 /**
  * example - '/command @name1'
  */
